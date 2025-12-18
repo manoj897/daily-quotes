@@ -1,0 +1,57 @@
+CREATE TABLE Reflection (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    quoteId TEXT NOT NULL,
+    quoteContent TEXT NOT NULL,
+    author TEXT NOT NULL,
+    note TEXT NOT NULL,
+    createdAt INTEGER NOT NULL
+);
+
+CREATE TABLE Tag (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE ReflectionTag (
+    reflectionId INTEGER NOT NULL,
+    tagId INTEGER NOT NULL,
+    PRIMARY KEY (reflectionId, tagId),
+    FOREIGN KEY (reflectionId) REFERENCES Reflection(id) ON DELETE CASCADE,
+    FOREIGN KEY (tagId) REFERENCES Tag(id) ON DELETE CASCADE
+);
+
+-- Queries
+insertReflection:
+INSERT INTO Reflection(quoteId, quoteContent, author, note, createdAt)
+VALUES (?, ?, ?, ?, ?);
+
+lastInsertedId:
+SELECT last_insert_rowid();
+
+insertTag:
+INSERT OR IGNORE INTO Tag(name)
+VALUES (?);
+
+getTagByName:
+SELECT * FROM Tag WHERE name = ?;
+
+linkTagToReflection:
+INSERT INTO ReflectionTag(reflectionId, tagId)
+VALUES (?, ?);
+
+getAllReflections:
+SELECT * FROM Reflection ORDER BY createdAt DESC;
+
+getTagsForReflection:
+SELECT T.* FROM Tag T
+JOIN ReflectionTag RT ON T.id = RT.tagId
+WHERE RT.reflectionId = ?;
+
+getAllTags:
+SELECT * FROM Tag;
+
+getReflectionsByTag:
+SELECT R.* FROM Reflection R
+JOIN ReflectionTag RT ON R.id = RT.reflectionId
+WHERE RT.tagId = ?
+ORDER BY R.createdAt DESC;

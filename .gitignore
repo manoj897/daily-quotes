@@ -4,3 +4,15 @@
 node_modules/
 dist/
 build/
+.gradle/
+*.class
+*.apk
+*.aar
+*.bin
+captures/
+.externalNativeBuild/
+.cxx/
+local.properties
+/iosApp/DerivedData/
+/iosApp/.xcworkspace/
+/iosApp/Pods/

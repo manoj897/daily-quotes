@@ -4,7 +4,7 @@ import com.dailyquotes.db.DailyQuotesDb
 import kotlinx.datetime.Clock
 
 class ReflectionRepository(db: DailyQuotesDb) {
-    private val queries = db.DailyQuotesDbQueries
+    private val queries = db.dailyQuotesDbQueries
 
     fun saveReflection(quote: Quote, note: String, tags: List<String>) {
         queries.transaction {

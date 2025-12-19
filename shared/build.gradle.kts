@@ -29,7 +29,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.ktor.serialization-kotlinx-json)
+            implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.sqldelight.runtime)
             implementation(libs.koin.core)
             implementation(libs.kotlinx.coroutines.core)
@@ -38,11 +38,13 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.sqldelight.android-driver)
+            implementation(libs.sqldelight.android.driver)
+            implementation(libs.androidx.core.ktx) // Add AndroidX Core KTX for NotificationCompat and other core APIs
+            implementation(libs.androidx.core)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
-            implementation(libs.sqldelight.native-driver)
+            implementation(libs.sqldelight.native.driver)
         }
     }
 }

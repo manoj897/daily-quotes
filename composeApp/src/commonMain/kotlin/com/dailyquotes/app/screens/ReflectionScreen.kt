@@ -12,6 +12,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +29,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dailyquotes.shared.Quote
 
 class ReflectionScreen(private val quote: Quote) : Screen {
+    @OptIn(ExperimentalLayoutApi::class)
     @Composable
     override fun Content() {
         val screenModel = getScreenModel<ReflectionScreenModel>()
@@ -116,7 +120,7 @@ class ReflectionScreen(private val quote: Quote) : Screen {
                     // Selected Tags
                     if (state.tags.isNotEmpty()) {
                         FlowRow(
-                            itemSpacing = 8.dp,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
                         ) {
                             state.tags.forEach { tag ->
@@ -185,12 +189,13 @@ fun TagChip(tag: String, onRemove: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SuggestionChip(tag: String, onClick: () -> Unit) {
     Surface(
         color = Color.Transparent,
         shape = CircleShape,
-        border = AssistChipDefaults.assistChipBorder(borderColor = Color.DarkGray),
+        border = BorderStroke(1.dp, Color.DarkGray),
         modifier = Modifier.clickable { onClick() }
     ) {
         Text(
@@ -202,16 +207,4 @@ fun SuggestionChip(tag: String, onClick: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun FlowRow(
-    itemSpacing: androidx.compose.ui.unit.Dp,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    androidx.compose.foundation.layout.FlowRow(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(itemSpacing),
-        content = { content() }
-    )
-}
+

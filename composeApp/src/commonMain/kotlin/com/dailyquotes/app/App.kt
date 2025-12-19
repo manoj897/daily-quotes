@@ -6,22 +6,20 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
 import com.dailyquotes.app.screens.QuoteScreen
 import com.dailyquotes.shared.NotificationManager
-import org.koin.compose.KoinContext
-import org.koin.compose.getKoin
+import org.koin.core.context.KoinContext
+import org.koin.mp.KoinPlatform.getKoin
 
 @Composable
 fun App() {
-    KoinContext {
-        val notificationManager: NotificationManager = getKoin().get()
-        
-        LaunchedEffect(Unit) {
-            notificationManager.scheduleDailyReminder(9, 0) // Default to 9:00 AM
-        }
+    val notificationManager: NotificationManager = getKoin().get()
+    
+    LaunchedEffect(Unit) {
+        notificationManager.scheduleDailyReminder(9, 0) // Default to 9:00 AM
+    }
 
-        DailyQuotesTheme {
-            Navigator(QuoteScreen()) { navigator ->
-                SlideTransition(navigator)
-            }
+    DailyQuotesTheme {
+        Navigator(QuoteScreen()) { navigator ->
+            SlideTransition(navigator)
         }
     }
 }

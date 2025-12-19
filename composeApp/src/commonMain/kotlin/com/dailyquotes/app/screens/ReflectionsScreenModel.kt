@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 
 class ReflectionsScreenModel(
     private val repository: ReflectionRepository
-) : StateScreenModel<ReflectionsScreenModel.State>(State.Loading) {
+) : StateScreenModel<ReflectionsScreenModel.State>(State(isLoading = true)) {
 
     data class State(
         val reflections: List<Reflection> = emptyList(),
@@ -20,13 +20,9 @@ class ReflectionsScreenModel(
     )
 
     sealed class UIState {
-        object Loading : State()
-        // wait, I'm using StateScreenModel<State>
+        object Loading : UIState()
     }
     
-    // Correcting pattern to use the data class State
-    object Loading : State() // No, that won't work with the generic type easily if State is a data class
-
     init {
         loadReflections()
     }

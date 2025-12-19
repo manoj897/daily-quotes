@@ -11,6 +11,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,6 +27,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dailyquotes.shared.Reflection
 
 class ReflectionsScreen : Screen {
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val screenModel = getScreenModel<ReflectionsScreenModel>()
@@ -108,6 +111,7 @@ class ReflectionsScreen : Screen {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ReflectionItem(reflection: Reflection) {
     Card(
@@ -141,7 +145,7 @@ fun ReflectionItem(reflection: Reflection) {
             
             if (reflection.tags.isNotEmpty()) {
                 FlowRow(
-                    itemSpacing = 8.dp,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(top = 12.dp)
                 ) {
                     reflection.tags.forEach { tag ->
@@ -163,16 +167,4 @@ fun ReflectionItem(reflection: Reflection) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun FlowRow(
-    itemSpacing: androidx.compose.ui.unit.Dp,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    androidx.compose.foundation.layout.FlowRow(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(itemSpacing),
-        content = { content() }
-    )
-}
+

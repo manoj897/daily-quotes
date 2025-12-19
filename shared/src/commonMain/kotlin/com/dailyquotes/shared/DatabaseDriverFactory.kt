@@ -6,4 +6,4 @@ interface DatabaseDriverFactory {
     fun createDriver(): SqlDriver
 }
 
-expect fun createDatabaseDriverFactory(): DatabaseDriverFactory
+

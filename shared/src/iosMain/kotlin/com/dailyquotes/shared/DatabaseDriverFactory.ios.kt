@@ -10,4 +10,4 @@ class IOSDatabaseDriverFactory : DatabaseDriverFactory {
     }
 }
 
-actual fun createDatabaseDriverFactory(): DatabaseDriverFactory = IOSDatabaseDriverFactory()
+

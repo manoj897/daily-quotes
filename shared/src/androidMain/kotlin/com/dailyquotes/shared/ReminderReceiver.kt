@@ -2,12 +2,12 @@ package com.dailyquotes.shared
 
 import android.app.NotificationChannel
 import android.app.NotificationManager as AndroidNotificationManager
+import android.app.Notification
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.core.app.NotificationCompat
 
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -30,11 +30,17 @@ class ReminderReceiver : BroadcastReceiver() {
         // We assume MainActivity is the entry point
         val activityIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
         val pendingIntent = PendingIntent.getActivity(
-            context, 0, activityIntent, 
+            context, 0, activityIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notification = NotificationCompat.Builder(context, channelId)
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(context, channelId)
+        } else {
+            Notification.Builder(context)
+        }
+
+        val notification = builder
             .setContentTitle("Daily Inspiration")
             .setContentText("Time for your daily quote reflection.")
             .setSmallIcon(android.R.drawable.ic_dialog_info) // Placeholder icon

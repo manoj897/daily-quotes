@@ -1,0 +1,19 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 16" build ARCHS=arm64
+
+User defaults from command line:
+    IDEPackageSupportUseBuiltinSCM = YES
+
+Build settings from command line:
+    ARCHS = arm64
+    SDKROOT = iphonesimulator18.2
+
+2025-12-20 10:03:48.915 xcodebuild[78612:983828] -[PBXFileReference buildPhase]: unrecognized selector sent to instance 0x14fa62e90
+2025-12-20 10:03:48.917 xcodebuild[78612:983828] Writing error result bundle to /var/folders/fj/dvfx4jmx6yv9k_d1yck2tgr40000gn/T/ResultBundle_2025-20-12_10-03-0048.xcresult
+xcodebuild: error: Unable to read project 'iosApp.xcodeproj' from folder '/Users/manoj.krishnan/StudioProjects/Personal/daily-quotes/iosApp'.
+	Reason: The project ‘iosApp’ is damaged and cannot be opened. Examine the project file for invalid edits or unresolved source control conflicts.
+
+Path: /Users/manoj.krishnan/StudioProjects/Personal/daily-quotes/iosApp/iosApp.xcodeproj
+Exception: -[PBXFileReference buildPhase]: unrecognized selector sent to instance 0x14fa62e90
+
+

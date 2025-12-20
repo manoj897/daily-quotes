@@ -6,3 +6,7 @@ import platform.UIKit.UIViewController
 fun MainViewController(): UIViewController = ComposeUIViewController {
     App()
 }
+
+fun initKoinIos() = initKoin {
+    // Platform-specific setup if needed
+}

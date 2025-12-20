@@ -9,6 +9,7 @@
 /* BEGIN PBXBuildFile section */
 		9F7C2C0A28A1C5A8007E3F0F /* iosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F7C2C0928A1C5A8007E3F0F /* iosApp.swift */; };
 		9F7C2C0C28A1C5A8007E3F0F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F7C2C0B28A1C5A8007E3F0F /* ContentView.swift */; };
+		9F7C2C1528A1C5A8007E3F0F /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F7C2C1428A1C5A8007E3F0F /* libsqlite3.tbd */; };
 /* END PBXBuildFile section */
 
 /* BEGIN PBXFileReference section */
@@ -16,6 +17,7 @@
 		9F7C2C0928A1C5A8007E3F0F /* iosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = source.swift; path = iosApp.swift; sourceTree = "<group>"; };
 		9F7C2C0B28A1C5A8007E3F0F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = source.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9F7C2C0D28A1C5A8007E3F0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9F7C2C1428A1C5A8007E3F0F /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 /* END PBXFileReference section */
 
 /* BEGIN PBXFrameworksBuildPhase section */
@@ -23,6 +25,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9F7C2C1528A1C5A8007E3F0F /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -33,6 +36,7 @@
 			isa = PBXGroup;
 			children = (
 				9F7C2C0828A1C5A8007E3F0F /* iosApp */,
+				9F7C2C1328A1C5A8007E3F0F /* Frameworks */,
 				9F7C2C0728A1C5A8007E3F0F /* Products */,
 			);
 			sourceTree = "<group>";

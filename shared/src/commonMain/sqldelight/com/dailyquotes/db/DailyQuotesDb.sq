@@ -55,3 +55,6 @@ SELECT R.* FROM Reflection R
 JOIN ReflectionTag RT ON R.id = RT.reflectionId
 WHERE RT.tagId = ?
 ORDER BY R.createdAt DESC;
+
+deleteReflection:
+DELETE FROM Reflection WHERE id = ?;

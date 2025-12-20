@@ -35,4 +35,8 @@ class ReflectionRepository(db: DailyQuotesDb) {
     fun getAllTags(): List<String> {
         return queries.getAllTags().executeAsList().map { it.name }
     }
+
+    fun deleteReflection(id: Long) {
+        queries.deleteReflection(id)
+    }
 }

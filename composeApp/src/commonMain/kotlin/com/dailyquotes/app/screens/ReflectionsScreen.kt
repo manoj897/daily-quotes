@@ -7,7 +7,11 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,35 +30,58 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dailyquotes.shared.Reflection
 
+@OptIn(ExperimentalMaterial3Api::class)
 class ReflectionsScreen : Screen {
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val screenModel = getScreenModel<ReflectionsScreenModel>()
         val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
 
+        val isSelectionMode = state.selectedIds.isNotEmpty()
+
         Scaffold(
             topBar = {
-                CenterAlignedTopAppBar(
-                    title = { Text("REFLECTIONS", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) },
-                    navigationIcon = {
-                        IconButton(onClick = { navigator.pop() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                        }
-                    },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color.Black,
-                        titleContentColor = Color.White,
-                        navigationIconContentColor = Color.White
+                if (isSelectionMode) {
+                    TopAppBar(
+                        title = { Text("${state.selectedIds.size} selected") },
+                        navigationIcon = {
+                            IconButton(onClick = { screenModel.clearSelection() }) {
+                                Icon(Icons.Default.Close, contentDescription = "Clear Selection")
+                            }
+                        },
+                        actions = {
+                            IconButton(onClick = { screenModel.deleteSelected() }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Delete Selected", tint = Color.Red)
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Black,
+                            titleContentColor = Color.White,
+                            navigationIconContentColor = Color.White
+                        )
                     )
-                )
+                } else {
+                    CenterAlignedTopAppBar(
+                        title = { Text("REFLECTIONS", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) },
+                        navigationIcon = {
+                            IconButton(onClick = { navigator.pop() }) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            }
+                        },
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = Color.Black,
+                            titleContentColor = Color.White,
+                            navigationIconContentColor = Color.White
+                        )
+                    )
+                }
             },
             containerColor = Color.Black
         ) { padding ->
             Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-                // Tag Filter Row
-                if (state.allTags.isNotEmpty()) {
+                // Tag Filter Row (Only show when not in selection mode)
+                if (!isSelectionMode && state.allTags.isNotEmpty()) {
                     LazyRow(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp),
@@ -102,7 +129,17 @@ class ReflectionsScreen : Screen {
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(state.filteredReflections) { reflection ->
-                            ReflectionItem(reflection)
+                            val isSelected = state.selectedIds.contains(reflection.id)
+                            ReflectionItem(
+                                reflection = reflection,
+                                isSelected = isSelected,
+                                onLongClick = { screenModel.toggleSelection(reflection.id) },
+                                onClick = { 
+                                    if (isSelectionMode) {
+                                        screenModel.toggleSelection(reflection.id)
+                                    }
+                                }
+                            )
                         }
                     }
                 }
@@ -111,12 +148,25 @@ class ReflectionsScreen : Screen {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
-fun ReflectionItem(reflection: Reflection) {
+fun ReflectionItem(
+    reflection: Reflection, 
+    isSelected: Boolean, 
+    onLongClick: () -> Unit,
+    onClick: () -> Unit
+) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF111111)),
-        modifier = Modifier.fillMaxWidth()
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) Color(0xFF333333) else Color(0xFF111111)
+        ),
+        border = if (isSelected) BorderStroke(1.dp, Color.White) else null,
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(

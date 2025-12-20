@@ -16,6 +16,7 @@ class ReflectionsScreenModel(
         val filteredReflections: List<Reflection> = emptyList(),
         val allTags: List<String> = emptyList(),
         val selectedTag: String? = null,
+        val selectedIds: Set<Long> = emptySet(),
         val isLoading: Boolean = false
     )
 
@@ -52,5 +53,34 @@ class ReflectionsScreenModel(
             }
             state.copy(selectedTag = tag, filteredReflections = filtered)
         }
+    }
+
+    fun toggleSelection(id: Long) {
+        mutableState.update { state ->
+            val newSelection = if (state.selectedIds.contains(id)) {
+                state.selectedIds - id
+            } else {
+                state.selectedIds + id
+            }
+            state.copy(selectedIds = newSelection)
+        }
+    }
+
+    fun deleteSelected() {
+        val idsToDelete = state.value.selectedIds
+        if (idsToDelete.isEmpty()) return
+
+        screenModelScope.launch {
+            mutableState.update { it.copy(isLoading = true) }
+            idsToDelete.forEach { id ->
+                repository.deleteReflection(id)
+            }
+            loadReflections()
+            mutableState.update { it.copy(selectedIds = emptySet()) }
+        }
+    }
+
+    fun clearSelection() {
+        mutableState.update { it.copy(selectedIds = emptySet()) }
     }
 }

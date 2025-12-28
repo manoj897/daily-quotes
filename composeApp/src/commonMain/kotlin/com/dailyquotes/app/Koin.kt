@@ -11,7 +11,7 @@ import org.koin.dsl.module
 val appModule = module {
     factory { QuoteScreenModel(get(), get()) }
     factory { ReflectionScreenModel(get()) }
-    factory { ReflectionsScreenModel(get()) }
+    factory { ReflectionsScreenModel(get(), get()) }
 }
 
 fun initKoin(appDeclaration: org.koin.dsl.KoinAppDeclaration = {}) = startKoin {

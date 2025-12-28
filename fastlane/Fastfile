@@ -1,0 +1,59 @@
+default_platform(:android)
+
+platform :android do
+
+  desc "Build a release AAB"
+  lane :build_release do
+    gradle(
+      task: "clean bundle",
+      build_type: "Release",
+      print_command: false
+    )
+
+    UI.success("Successfully built release AAB!")
+    UI.message("AAB location: " + lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH])
+  end
+
+  desc "Upload to Google Play Console (Production)"
+  lane :deploy_production do
+    # First build the release
+    build_release
+
+    # Upload to Play Store
+    upload_to_play_store(
+      track: 'production',
+      aab: lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
+      skip_upload_apk: true,
+      skip_upload_metadata: false,
+      skip_upload_images: false,
+      skip_upload_screenshots: false,
+      release_status: 'completed',  # Auto-publish after review
+      json_key: 'play-store-credentials.json'
+    )
+
+    UI.success("Successfully uploaded to Production!")
+  end
+
+  desc "Upload to Google Play Internal Testing"
+  lane :deploy_internal do
+    build_release
+
+    upload_to_play_store(
+      track: 'internal',
+      aab: lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      json_key: 'play-store-credentials.json'
+    )
+
+    UI.success("Successfully uploaded to Internal Testing!")
+  end
+
+  desc "Build and install debug version on connected device"
+  lane :install_debug do
+    gradle(task: "installDebug")
+  end
+
+end

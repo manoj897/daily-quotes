@@ -1,0 +1,8 @@
+Initial release of Daily Quotes!
+
+Features:
+- Daily inspirational quotes
+- Personal reflection journal
+- Tag organization
+- Share functionality
+- Beautiful minimalist design

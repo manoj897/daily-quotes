@@ -35,7 +35,7 @@ class QuoteScreenModel(
         }
     }
 
-    fun shareQuote(quote: Quote) {
-        shareManager.shareText("\"${quote.q}\" - ${quote.a}")
+    fun shareQuote(shareText: String) {
+        shareManager.shareText(shareText)
     }
 }

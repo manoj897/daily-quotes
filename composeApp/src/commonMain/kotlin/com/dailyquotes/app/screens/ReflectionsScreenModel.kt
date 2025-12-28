@@ -4,11 +4,13 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.dailyquotes.shared.Reflection
 import com.dailyquotes.shared.ReflectionRepository
+import com.dailyquotes.shared.ShareManager
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ReflectionsScreenModel(
-    private val repository: ReflectionRepository
+    private val repository: ReflectionRepository,
+    private val shareManager: ShareManager
 ) : StateScreenModel<ReflectionsScreenModel.State>(State(isLoading = true)) {
 
     data class State(
@@ -82,5 +84,9 @@ class ReflectionsScreenModel(
 
     fun clearSelection() {
         mutableState.update { it.copy(selectedIds = emptySet()) }
+    }
+
+    fun shareReflection(shareText: String) {
+        shareManager.shareText(shareText)
     }
 }

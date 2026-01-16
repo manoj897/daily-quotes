@@ -14,14 +14,6 @@ actual class NotificationManager(private val context: Context) {
     actual fun scheduleDailyReminder(hour: Int, minute: Int) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        // Check if we can schedule exact alarms on Android 12+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (!alarmManager.canScheduleExactAlarms()) {
-                // Cannot schedule exact alarms - permissions not granted
-                return
-            }
-        }
-
         val intent = Intent(context, ReminderReceiver::class.java).apply {
             putExtra("HOUR", hour)
             putExtra("MINUTE", minute)
@@ -35,18 +27,27 @@ actual class NotificationManager(private val context: Context) {
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
             set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
             if (before(Calendar.getInstance())) {
                 add(Calendar.DATE, 1)
             }
         }
 
-        // Use setExactAndAllowWhileIdle for reliable delivery even during Doze mode
-        // This doesn't repeat automatically, so we reschedule in the receiver
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
-            pendingIntent
-        )
+        // Schedule the alarm - use exact if permitted, otherwise fall back to inexact
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && alarmManager.canScheduleExactAlarms()) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                pendingIntent
+            )
+        } else {
+            // Fallback to inexact alarm (may be delayed by a few minutes)
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                pendingIntent
+            )
+        }
 
         // Store the schedule time in SharedPreferences for boot receiver
         val prefs = context.getSharedPreferences("daily_quotes_prefs", Context.MODE_PRIVATE)

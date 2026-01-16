@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -47,6 +48,9 @@ class QuoteScreen : Screen {
                 ) {
                     IconButton(onClick = { navigator.push(ReflectionsScreen()) }) {
                         Icon(Icons.Default.List, contentDescription = "Reflections")
+                    }
+                    IconButton(onClick = { navigator.push(SettingsScreen()) }) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                     Spacer(Modifier.weight(1f))
                     if (state is QuoteScreenModel.State.Success) {

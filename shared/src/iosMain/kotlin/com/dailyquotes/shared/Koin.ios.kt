@@ -7,4 +7,6 @@ actual fun platformModule(): Module = module {
     single<DatabaseDriverFactory> { IOSDatabaseDriverFactory() }
     single { ShareManager() }
     single { NotificationManager() }
+    single { QuoteCache() }
+    single { UserPreferences() }
 }

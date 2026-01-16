@@ -1,8 +1,10 @@
 package com.dailyquotes.app
 
+import com.dailyquotes.app.screens.OnboardingScreenModel
 import com.dailyquotes.app.screens.QuoteScreenModel
 import com.dailyquotes.app.screens.ReflectionScreenModel
 import com.dailyquotes.app.screens.ReflectionsScreenModel
+import com.dailyquotes.app.screens.SettingsScreenModel
 import com.dailyquotes.shared.commonModule
 import com.dailyquotes.shared.platformModule
 import org.koin.core.context.startKoin
@@ -12,6 +14,8 @@ val appModule = module {
     factory { QuoteScreenModel(get(), get()) }
     factory { ReflectionScreenModel(get()) }
     factory { ReflectionsScreenModel(get(), get()) }
+    factory { OnboardingScreenModel(get(), get()) }
+    factory { SettingsScreenModel(get(), get()) }
 }
 
 fun initKoin(appDeclaration: org.koin.dsl.KoinAppDeclaration = {}) = startKoin {

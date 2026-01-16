@@ -7,4 +7,6 @@ actual fun platformModule(): Module = module {
     single<DatabaseDriverFactory> { AndroidDatabaseDriverFactory(get()) }
     single { ShareManager(get()) }
     single { NotificationManager(get()) }
+    single { QuoteCache(get()) }
+    single { UserPreferences(get()) }
 }

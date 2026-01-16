@@ -6,8 +6,8 @@ import org.koin.dsl.module
 
 fun commonModule() = module {
     single { createHttpClient() }
-    single { QuoteRepository(get()) }
-    single { 
+    single { QuoteRepository(get(), get()) }
+    single {
         val driverFactory: DatabaseDriverFactory = get()
         DailyQuotesDb(driverFactory.createDriver())
     }

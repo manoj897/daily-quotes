@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.googleServices)
+    alias(libs.plugins.firebaseCrashlytics)
 }
 
 // Load keystore properties
@@ -60,6 +62,8 @@ kotlin {
             implementation(libs.androidx.appcompat)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
+            implementation(platform(libs.firebase.bom.get()))
+            implementation(libs.firebase.crashlytics)
         }
         iosMain.dependencies {
         }
@@ -76,6 +80,10 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = project.property("VERSION_CODE").toString().toInt()
         versionName = project.property("VERSION_NAME").toString()
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     signingConfigs {

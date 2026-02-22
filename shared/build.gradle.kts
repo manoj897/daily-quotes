@@ -42,6 +42,8 @@ kotlin {
             implementation(libs.sqldelight.android.driver)
             implementation(libs.androidx.core.ktx) // Add AndroidX Core KTX for NotificationCompat and other core APIs
             implementation(libs.androidx.core)
+            implementation(platform(libs.firebase.bom.get()))
+            implementation(libs.firebase.crashlytics)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

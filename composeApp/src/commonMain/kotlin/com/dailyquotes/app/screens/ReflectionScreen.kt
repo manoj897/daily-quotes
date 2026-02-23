@@ -7,6 +7,10 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -50,6 +54,8 @@ class ReflectionScreen(private val quote: Quote) : Screen {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(24.dp)
+                    .verticalScroll(rememberScrollState())
+                    .imePadding()
             ) {
                 // Header with Close
                 Row(
@@ -89,39 +95,55 @@ class ReflectionScreen(private val quote: Quote) : Screen {
                     }
                 }
 
-                // Note Field
-                TextField(
+                // Note Field (outlined for visual emphasis)
+                OutlinedTextField(
                     value = state.note,
                     onValueChange = { screenModel.onNoteChange(it) },
-                    placeholder = { 
+                    placeholder = {
                         Text(
-                            "How does this apply to your life today?", 
+                            "How does this apply to your life today?",
                             color = Color.DarkGray,
                             fontSize = 18.sp
-                        ) 
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        cursorColor = Color.White,
+                    textStyle = LocalTextStyle.current.copy(fontSize = 18.sp, lineHeight = 28.sp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.DarkGray,
+                        cursorColor = Color.White
                     ),
-                    textStyle = LocalTextStyle.current.copy(fontSize = 18.sp, lineHeight = 28.sp)
+                    singleLine = false
                 )
 
                 // Tags Section
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
+                    // Suggestions stay visible above the input
+                    if (state.suggestedTags.isNotEmpty()) {
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(state.suggestedTags) { tag ->
+                                SuggestionChip(tag = tag, onClick = { screenModel.addTag(tag) })
+                            }
+                        }
+                    }
+
                     // Selected Tags
                     if (state.tags.isNotEmpty()) {
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
                         ) {
                             state.tags.forEach { tag ->
                                 TagChip(tag = tag, onRemove = { screenModel.removeTag(tag) })
@@ -129,7 +151,7 @@ class ReflectionScreen(private val quote: Quote) : Screen {
                         }
                     }
 
-                    // Tag Input
+                    // Tag Input (kept in view when keyboard opens)
                     OutlinedTextField(
                         value = state.tagInput,
                         onValueChange = { screenModel.onTagInputChange(it) },
@@ -148,18 +170,10 @@ class ReflectionScreen(private val quote: Quote) : Screen {
                             unfocusedTextColor = Color.White,
                             focusedBorderColor = Color.White,
                             unfocusedBorderColor = Color.DarkGray
-                        )
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        singleLine = false
                     )
-
-                    // Suggestions
-                    LazyRow(
-                        modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(state.suggestedTags) { tag ->
-                            SuggestionChip(tag = tag, onClick = { screenModel.addTag(tag) })
-                        }
-                    }
                 }
             }
         }
@@ -206,5 +220,3 @@ fun SuggestionChip(tag: String, onClick: () -> Unit) {
         )
     }
 }
-
-

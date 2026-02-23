@@ -5,13 +5,18 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
+import androidx.compose.material3.SheetValue
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.runtime.*
@@ -43,7 +48,7 @@ class ReflectionsScreen : Screen {
         
         var showShareSheet by remember { mutableStateOf(false) }
         var selectedReflectionForShare by remember { mutableStateOf<Reflection?>(null) }
-        val sheetState = rememberModalBottomSheetState()
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         val scope = rememberCoroutineScope()
 
         Scaffold(
@@ -171,6 +176,8 @@ class ReflectionsScreen : Screen {
                             .fillMaxWidth()
                             .padding(16.dp)
                             .padding(bottom = 32.dp)
+                            .verticalScroll(rememberScrollState())
+                            .imePadding()
                     ) {
                         Text(
                             "Share Reflection",
@@ -262,38 +269,30 @@ class ReflectionsScreen : Screen {
                                 unfocusedTextColor = Color.White,
                                 cursorColor = Color.White
                             ),
-                            minLines = 2
+                            minLines = 2,
+                            trailingIcon = {
+                                IconButton(onClick = {
+                                    val shareText = buildString {
+                                        append("\"${reflection.quoteContent}\"")
+                                        append("\n— ${reflection.author}")
+                                        if (userTake.isNotBlank()) {
+                                            append("\n\nMy Take\n${userTake}")
+                                        }
+                                        if (reflection.note.isNotEmpty() && includeReflection) {
+                                            append("\n\nReflection\n${reflection.note}")
+                                        }
+                                    }
+                                    screenModel.shareReflection(shareText)
+                                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                        if (!sheetState.isVisible) {
+                                            showShareSheet = false
+                                        }
+                                    }
+                                }) {
+                                    Icon(Icons.Default.Send, contentDescription = "Share now", tint = Color.White)
+                                }
+                            }
                         )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Button(
-                            onClick = {
-                                val shareText = buildString {
-                                    append("\"${reflection.quoteContent}\"")
-                                    append("\n— ${reflection.author}")
-                                    if (userTake.isNotBlank()) {
-                                        append("\n\nMy Take\n${userTake}")
-                                    }
-                                    if (reflection.note.isNotEmpty() && includeReflection) {
-                                        append("\n\nReflection\n${reflection.note}")
-                                    }
-                                }
-                                screenModel.shareReflection(shareText)
-                                scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                    if (!sheetState.isVisible) {
-                                        showShareSheet = false
-                                    }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = Color.Black
-                            )
-                        ) {
-                            Text("Share Now")
-                        }
                     }
                 }
             }
@@ -384,5 +383,3 @@ fun ReflectionItem(
     }
   }
 }
-
-

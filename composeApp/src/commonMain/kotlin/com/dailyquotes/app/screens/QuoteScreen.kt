@@ -5,7 +5,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -22,6 +24,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -37,7 +43,7 @@ class QuoteScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         
         var showShareSheet by remember { mutableStateOf(false) }
-        val sheetState = rememberModalBottomSheetState()
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         val scope = rememberCoroutineScope()
 
         Scaffold(
@@ -71,7 +77,37 @@ class QuoteScreen : Screen {
                 when (val currentState = state) {
                     is QuoteScreenModel.State.Loading -> CircularProgressIndicator(color = Color.White)
                     is QuoteScreenModel.State.Error -> {
-                        Text(currentState.message, color = MaterialTheme.colorScheme.error)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                currentState.message,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.titleMedium,
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                "Check your connection, then retry.",
+                                color = Color.Gray,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            Button(
+                                onClick = { screenModel.fetchQuote() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                )
+                            ) {
+                                Icon(Icons.Default.Refresh, contentDescription = "Retry")
+                                Spacer(Modifier.width(8.dp))
+                                Text("Retry")
+                            }
+                        }
                     }
                     is QuoteScreenModel.State.Success -> {
                         val quote = currentState.quote
@@ -130,11 +166,14 @@ class QuoteScreen : Screen {
             ) {
                 var userTake by remember { mutableStateOf("") }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .padding(bottom = 32.dp)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .padding(bottom = 32.dp)
+                            .verticalScroll(rememberScrollState())
+                            .imePadding()
+                            .navigationBarsPadding()
                 ) {
                     Text(
                         "Share Quote",
@@ -187,35 +226,27 @@ class QuoteScreen : Screen {
                             unfocusedTextColor = Color.White,
                             cursorColor = Color.White
                         ),
-                        minLines = 2
+                        minLines = 2,
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                val shareText = buildString {
+                                    append("\"${quote.q}\"")
+                                    append("\n— ${quote.a}")
+                                    if (userTake.isNotBlank()) {
+                                        append("\n\nMy Take\n$userTake")
+                                    }
+                                }
+                                screenModel.shareQuote(shareText)
+                                scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                    if (!sheetState.isVisible) {
+                                        showShareSheet = false
+                                    }
+                                }
+                            }) {
+                                Icon(Icons.Default.Send, contentDescription = "Share now", tint = Color.White)
+                            }
+                        }
                     )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Button(
-                        onClick = {
-                            val shareText = buildString {
-                                append("\"${quote.q}\"")
-                                append("\n— ${quote.a}")
-                                if (userTake.isNotBlank()) {
-                                    append("\n\nMy Take\n$userTake")
-                                }
-                            }
-                            screenModel.shareQuote(shareText)
-                            scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                if (!sheetState.isVisible) {
-                                    showShareSheet = false
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White,
-                            contentColor = Color.Black
-                        )
-                    ) {
-                        Text("Share Now")
-                    }
                 }
             }
         }

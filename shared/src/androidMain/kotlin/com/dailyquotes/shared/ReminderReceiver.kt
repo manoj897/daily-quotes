@@ -49,9 +49,9 @@ class ReminderReceiver : BroadcastReceiver() {
         }
 
         val notification = builder
-            .setContentTitle("Daily Inspiration")
+            .setContentTitle("Your Daily Insight")
             .setContentText("Time for your daily quote reflection.")
-            .setSmallIcon(android.R.drawable.ic_dialog_info) // Placeholder icon
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()

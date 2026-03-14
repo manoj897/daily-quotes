@@ -1,5 +1,6 @@
 package com.dailyquotes.app.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,6 +33,7 @@ class OnboardingScreen : Screen {
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {

@@ -94,8 +94,10 @@ class ReflectionsScreen : Screen {
                 // Tag Filter Row (Only show when not in selection mode)
                 if (!isSelectionMode && state.allTags.isNotEmpty()) {
                     LazyRow(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp, bottom = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         item {
@@ -136,8 +138,8 @@ class ReflectionsScreen : Screen {
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(state.filteredReflections) { reflection ->
                             val isSelected = state.selectedIds.contains(reflection.id)
@@ -321,32 +323,55 @@ fun ReflectionItem(
                 onLongClick = onLongClick
             )
     ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = reflection.quoteContent,
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = "- ${reflection.author}",
-                color = Color.Gray,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-            
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = reflection.quoteContent,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = "- ${reflection.author}",
+                        color = Color.Gray,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = onShare,
+                    modifier = Modifier.padding(top = 4.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Share,
+                        contentDescription = "Share",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
             HorizontalDivider(color = Color(0xFF222222), modifier = Modifier.padding(vertical = 12.dp))
-            
+
             Text(
                 text = reflection.note,
                 color = Color(0xFFBBBBBB),
                 fontSize = 14.sp,
                 lineHeight = 22.sp
             )
-            
+
             if (reflection.tags.isNotEmpty()) {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -358,9 +383,9 @@ fun ReflectionItem(
                             shape = MaterialTheme.shapes.extraSmall
                         ) {
                             Text(
-                                tag, 
-                                color = Color.LightGray, 
-                                fontSize = 10.sp, 
+                                tag,
+                                color = Color.LightGray,
+                                fontSize = 10.sp,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
@@ -368,18 +393,5 @@ fun ReflectionItem(
                 }
             }
         }
-        
-        IconButton(
-            onClick = onShare,
-            modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)
-        ) {
-            Icon(
-                Icons.Default.Share,
-                contentDescription = "Share",
-                tint = Color.Gray,
-                modifier = Modifier.size(20.dp)
-            )
-        }
     }
-  }
 }

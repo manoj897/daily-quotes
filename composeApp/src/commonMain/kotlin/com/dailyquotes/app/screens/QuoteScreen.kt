@@ -52,16 +52,15 @@ class QuoteScreen : Screen {
                     containerColor = MaterialTheme.colorScheme.background,
                     contentColor = MaterialTheme.colorScheme.primary
                 ) {
-                    IconButton(onClick = { navigator.push(ReflectionsScreen()) }) {
-                        Icon(Icons.Default.List, contentDescription = "Reflections")
-                    }
-                    IconButton(onClick = { navigator.push(SettingsScreen()) }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
-                    }
-                    Spacer(Modifier.weight(1f))
-                    if (state is QuoteScreenModel.State.Success) {
-                        IconButton(onClick = { showShareSheet = true }) {
-                            Icon(Icons.Default.Share, contentDescription = "Share")
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        IconButton(onClick = { navigator.push(ReflectionsScreen()) }) {
+                            Icon(Icons.Default.List, contentDescription = "Reflections")
+                        }
+                        IconButton(onClick = { navigator.push(SettingsScreen()) }) {
+                            Icon(Icons.Default.Settings, contentDescription = "Settings")
                         }
                     }
                 }
@@ -137,18 +136,38 @@ class QuoteScreen : Screen {
                             )
                             
                             Spacer(Modifier.height(48.dp))
-                            
-                            Button(
-                                onClick = { navigator.push(ReflectionScreen(quote)) },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary
-                                ),
-                                shape = MaterialTheme.shapes.medium
+
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.Edit, contentDescription = null)
-                                Spacer(Modifier.width(8.dp))
-                                Text("REFLECT")
+                                Button(
+                                    onClick = { navigator.push(ReflectionScreen(quote)) },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
+                                    ),
+                                    shape = MaterialTheme.shapes.medium
+                                ) {
+                                    Icon(Icons.Default.Edit, contentDescription = null)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("REFLECT")
+                                }
+
+                                OutlinedButton(
+                                    onClick = { showShareSheet = true },
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.primary
+                                    ),
+                                    border = ButtonDefaults.outlinedButtonBorder.copy(
+                                        brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary)
+                                    ),
+                                    shape = MaterialTheme.shapes.medium
+                                ) {
+                                    Icon(Icons.Default.Share, contentDescription = null)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("SHARE")
+                                }
                             }
                         }
                     }

@@ -1,6 +1,5 @@
 package com.dailyquotes.app.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -9,14 +8,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
-import androidx.compose.material3.SheetValue
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.runtime.*
@@ -52,7 +50,6 @@ class ReflectionsScreen : Screen {
         var showShareSheet by remember { mutableStateOf(false) }
         var selectedReflectionForShare by remember { mutableStateOf<Reflection?>(null) }
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        val scope = rememberCoroutineScope()
 
         Scaffold(
             topBar = {
@@ -80,7 +77,7 @@ class ReflectionsScreen : Screen {
                         title = { Text("REFLECTIONS", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) },
                         navigationIcon = {
                             IconButton(onClick = { navigator.pop() }) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                             }
                         },
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -153,6 +150,8 @@ class ReflectionsScreen : Screen {
                                 onClick = { 
                                     if (isSelectionMode) {
                                         screenModel.toggleSelection(reflection.id)
+                                    } else {
+                                        navigator.push(ReflectionDetailScreen(reflection))
                                     }
                                 },
                                 onShare = {
@@ -166,212 +165,227 @@ class ReflectionsScreen : Screen {
             }
             
             if (showShareSheet && selectedReflectionForShare != null) {
-                val reflection = selectedReflectionForShare!!
-                ModalBottomSheet(
-                    onDismissRequest = { showShareSheet = false },
+                SavedReflectionShareSheet(
+                    reflection = selectedReflectionForShare!!,
                     sheetState = sheetState,
-                    containerColor = Color(0xFF111111),
-                    contentColor = Color.White
+                    onDismiss = { showShareSheet = false },
+                    onShareText = screenModel::shareReflection
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SavedReflectionShareSheet(
+    reflection: Reflection,
+    sheetState: SheetState,
+    onDismiss: () -> Unit,
+    onShareText: (String) -> Unit
+) {
+    val scope = rememberCoroutineScope()
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = Color(0xFF111111),
+        contentColor = Color.White
+    ) {
+        var userTake by remember { mutableStateOf("") }
+        var includeReflection by remember { mutableStateOf(false) }
+        var includeSourceInShare by remember { mutableStateOf(true) }
+        var isUserTakeHidden by remember { mutableStateOf(true) }
+        var isUserTakeFocused by remember { mutableStateOf(false) }
+        val hasUserTake = userTake.isNotBlank()
+        val isUserTakeActive = !isUserTakeHidden && (hasUserTake || isUserTakeFocused)
+        fun shareReflection() {
+            val shareText = buildString {
+                append("\"${reflection.quoteContent}\"")
+                append("\n— ${reflection.author}")
+                if (!isUserTakeHidden && hasUserTake) {
+                    append("\n\nMy Take\n${userTake}")
+                }
+                if (reflection.note.isNotEmpty() && includeReflection) {
+                    append("\n\nReflection\n${reflection.note}")
+                }
+                if (includeSourceInShare) {
+                    appendZenQuotesSource()
+                }
+            }
+            onShareText(shareText)
+            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                if (!sheetState.isVisible) {
+                    onDismiss()
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .padding(bottom = 32.dp)
+                .verticalScroll(rememberScrollState())
+                .imePadding()
+        ) {
+            Text(
+                "Share Reflection",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF222222)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        text = reflection.quoteContent,
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                    )
+                    Text(
+                        text = "- ${reflection.author}",
+                        color = Color.Gray,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+            }
+
+            SourceShareToggle(
+                includeSourceInShare = includeSourceInShare,
+                onIncludeSourceInShareChange = { includeSourceInShare = it },
+                modifier = Modifier.padding(top = 8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            if (reflection.note.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    var userTake by remember { mutableStateOf("") }
-                    var includeReflection by remember { mutableStateOf(false) }
-                    var includeSourceInShare by remember { mutableStateOf(true) }
-                    var isUserTakeHidden by remember { mutableStateOf(true) }
-                    var isUserTakeFocused by remember { mutableStateOf(false) }
-                    val hasUserTake = userTake.isNotBlank()
-                    val isUserTakeActive = !isUserTakeHidden && (hasUserTake || isUserTakeFocused)
-                    fun shareReflection() {
-                        val shareText = buildString {
-                            append("\"${reflection.quoteContent}\"")
-                            append("\n— ${reflection.author}")
-                            if (!isUserTakeHidden && hasUserTake) {
-                                append("\n\nMy Take\n${userTake}")
-                            }
-                            if (reflection.note.isNotEmpty() && includeReflection) {
-                                append("\n\nReflection\n${reflection.note}")
-                            }
-                            if (includeSourceInShare) {
-                                appendZenQuotesSource()
-                            }
-                        }
-                        screenModel.shareReflection(shareText)
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                showShareSheet = false
-                            }
-                        }
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                            .padding(bottom = 32.dp)
-                            .verticalScroll(rememberScrollState())
-                            .imePadding()
-                    ) {
-                        Text(
-                            "Share Reflection",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                    Text(
+                        "Reflection",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White
+                    )
+                    IconButton(onClick = { includeReflection = !includeReflection }) {
+                        Icon(
+                            if (includeReflection) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = if (includeReflection) "Exclude reflection from share" else "Include reflection in share",
+                            tint = if (includeReflection) Color.White else Color.Gray,
+                            modifier = Modifier.size(20.dp)
                         )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Quote Context
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFF222222)),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text(
-                                    text = reflection.quoteContent,
-                                    color = Color.White,
-                                    fontSize = 14.sp,
-                                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                                )
-                                Text(
-                                    text = "- ${reflection.author}",
-                                    color = Color.Gray,
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.padding(top = 4.dp)
-                                )
-                            }
-                        }
-
-                        SourceShareToggle(
-                            includeSourceInShare = includeSourceInShare,
-                            onIncludeSourceInShareChange = { includeSourceInShare = it },
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        // Reflection section with delete option
-                        if (reflection.note.isNotEmpty()) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    "Reflection",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = Color.White
-                                )
-                                IconButton(onClick = { includeReflection = !includeReflection }) {
-                                    Icon(
-                                        if (includeReflection) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                        contentDescription = if (includeReflection) "Exclude reflection from share" else "Include reflection in share",
-                                        tint = if (includeReflection) Color.White else Color.Gray,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-
-                            Text(
-                                if (includeReflection) "Included in share" else "Excluded from share",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-
-                            if (includeReflection) {
-                                Card(
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF222222)),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Text(
-                                        text = reflection.note,
-                                        color = Color.LightGray,
-                                        fontSize = 14.sp,
-                                        modifier = Modifier.padding(12.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(24.dp))
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "My Take (optional)",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = Color.White
-                            )
-
-                            IconButton(
-                                onClick = {
-                                    isUserTakeHidden = !isUserTakeHidden
-                                    isUserTakeFocused = false
-                                }
-                            ) {
-                                Icon(
-                                    if (isUserTakeHidden) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = if (isUserTakeHidden) "Include My Take in share" else "Exclude My Take from share",
-                                    tint = if (isUserTakeHidden) Color.Gray else Color.White,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-
-                        Text(
-                            when {
-                                isUserTakeHidden -> "Excluded from share"
-                                isUserTakeActive -> "Included in share"
-                                else -> "Leave blank to share just the quote."
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-
-                        if (!isUserTakeHidden) {
-                            OutlinedTextField(
-                                value = userTake,
-                                onValueChange = { newValue ->
-                                    userTake = newValue
-                                    if (newValue.isNotBlank()) {
-                                        isUserTakeHidden = false
-                                    }
-                                },
-                                placeholder = { Text("Add your thoughts...", color = Color.Gray) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .onFocusChanged { focusState ->
-                                        isUserTakeFocused = focusState.isFocused
-                                    },
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color.White,
-                                    unfocusedBorderColor = Color.Gray,
-                                    focusedTextColor = Color.White,
-                                    unfocusedTextColor = Color.White,
-                                    cursorColor = Color.White
-                                ),
-                                minLines = 2
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Button(
-                            onClick = { shareReflection() },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = Color.Black
-                            ),
-                            shape = MaterialTheme.shapes.medium
-                        ) {
-                            Text("Share Reflection")
-                        }
                     }
                 }
+
+                Text(
+                    if (includeReflection) "Included in share" else "Excluded from share",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                if (includeReflection) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF222222)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = reflection.note,
+                            color = Color.LightGray,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "My Take",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White
+                )
+
+                IconButton(
+                    onClick = {
+                        isUserTakeHidden = !isUserTakeHidden
+                        isUserTakeFocused = false
+                    }
+                ) {
+                    Icon(
+                        if (isUserTakeHidden) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = if (isUserTakeHidden) "Include My Take in share" else "Exclude My Take from share",
+                        tint = if (isUserTakeHidden) Color.Gray else Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            Text(
+                when {
+                    isUserTakeHidden -> "Excluded from share"
+                    isUserTakeActive -> "Included in share"
+                    else -> "Leave blank to share just the quote."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            if (!isUserTakeHidden) {
+                OutlinedTextField(
+                    value = userTake,
+                    onValueChange = { newValue ->
+                        userTake = newValue
+                        if (newValue.isNotBlank()) {
+                            isUserTakeHidden = false
+                        }
+                    },
+                    placeholder = { Text("Add your thoughts...", color = Color.Gray) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged { focusState ->
+                            isUserTakeFocused = focusState.isFocused
+                        },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        cursorColor = Color.White
+                    ),
+                    minLines = 2
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { shareReflection() },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color.Black
+                ),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Share Reflection")
             }
         }
     }

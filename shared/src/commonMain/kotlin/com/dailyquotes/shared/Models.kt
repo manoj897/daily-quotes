@@ -9,6 +9,7 @@ data class Quote(
     val h: String? = null // html (optional)
 )
 
+@Serializable
 data class Reflection(
     val id: Long,
     val quoteContent: String,

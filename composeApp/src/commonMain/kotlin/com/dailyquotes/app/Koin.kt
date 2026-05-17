@@ -2,6 +2,7 @@ package com.dailyquotes.app
 
 import com.dailyquotes.app.screens.OnboardingScreenModel
 import com.dailyquotes.app.screens.QuoteScreenModel
+import com.dailyquotes.app.screens.ReflectionDetailScreenModel
 import com.dailyquotes.app.screens.ReflectionScreenModel
 import com.dailyquotes.app.screens.ReflectionsScreenModel
 import com.dailyquotes.app.screens.SettingsScreenModel
@@ -13,6 +14,7 @@ import org.koin.dsl.module
 val appModule = module {
     factory { QuoteScreenModel(get(), get()) }
     factory { ReflectionScreenModel(get()) }
+    factory { ReflectionDetailScreenModel(get()) }
     factory { ReflectionsScreenModel(get(), get()) }
     factory { OnboardingScreenModel(get(), get()) }
     factory { SettingsScreenModel(get(), get()) }

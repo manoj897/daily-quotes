@@ -272,7 +272,7 @@ class QuoteScreen : Screen {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "My Take (optional)",
+                            "My Take",
                             style = MaterialTheme.typography.titleMedium,
                             color = Color.White
                         )

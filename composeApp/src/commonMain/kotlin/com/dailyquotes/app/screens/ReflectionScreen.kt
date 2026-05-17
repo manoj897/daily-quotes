@@ -3,8 +3,6 @@ package com.dailyquotes.app.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,6 +37,30 @@ class ReflectionScreen(private val quote: Quote) : Screen {
         val screenModel = getScreenModel<ReflectionScreenModel>()
         val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
+        val selectedTagLimitText = when {
+            state.tags.size >= ReflectionScreenModel.MAX_TAGS_PER_REFLECTION -> "${ReflectionScreenModel.MAX_TAGS_PER_REFLECTION} tag limit reached"
+            state.tags.size >= ReflectionScreenModel.TAG_WARNING_THRESHOLD -> "${state.tags.size} of ${ReflectionScreenModel.MAX_TAGS_PER_REFLECTION} tags used"
+            else -> null
+        }
+        val globalTagLimitText = when {
+            state.globalTagCount >= ReflectionScreenModel.MAX_GLOBAL_TAGS -> "${ReflectionScreenModel.MAX_GLOBAL_TAGS} tag limit reached. Reuse an existing tag or remove old tags."
+            state.globalTagCount >= ReflectionScreenModel.GLOBAL_TAG_WARNING_THRESHOLD -> "${state.globalTagCount} of ${ReflectionScreenModel.MAX_GLOBAL_TAGS} global tags used"
+            else -> null
+        }
+        val canAddMoreTags = state.tags.size < ReflectionScreenModel.MAX_TAGS_PER_REFLECTION
+        val tagSuggestionTitle = if (state.isShowingDefaultSuggestions) {
+            "Frequent / recent"
+        } else {
+            "Matching tags"
+        }
+        val tagSuggestionMeta = if (
+            state.isShowingDefaultSuggestions &&
+            state.availableTagCount > state.suggestedTags.size
+        ) {
+            "${state.suggestedTags.size} of ${state.availableTagCount}"
+        } else {
+            null
+        }
 
         if (state.saveSuccess) {
             LaunchedEffect(Unit) {
@@ -125,13 +147,35 @@ class ReflectionScreen(private val quote: Quote) : Screen {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     // Suggestions stay visible above the input
                     if (state.suggestedTags.isNotEmpty()) {
-                        LazyRow(
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = tagSuggestionTitle,
+                                color = Color.Gray,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            tagSuggestionMeta?.let {
+                                Text(
+                                    text = it,
+                                    color = Color.Gray,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                        FlowRow(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(state.suggestedTags) { tag ->
+                            state.suggestedTags.forEach { tag ->
                                 SuggestionChip(tag = tag, onClick = { screenModel.addTag(tag) })
                             }
                         }
@@ -151,16 +195,43 @@ class ReflectionScreen(private val quote: Quote) : Screen {
                         }
                     }
 
+                    if (selectedTagLimitText != null || globalTagLimitText != null) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            selectedTagLimitText?.let {
+                                Text(
+                                    text = it,
+                                    color = Color.Gray,
+                                    fontSize = 12.sp
+                                )
+                            }
+                            globalTagLimitText?.let {
+                                Text(
+                                    text = it,
+                                    color = Color.Gray,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    }
+
                     // Tag Input (kept in view when keyboard opens)
                     OutlinedTextField(
                         value = state.tagInput,
                         onValueChange = { screenModel.onTagInputChange(it) },
-                        placeholder = { Text("Add tag...") },
+                        placeholder = { Text(if (canAddMoreTags) "Search / Add a tag" else "Tag limit reached") },
                         modifier = Modifier.fillMaxWidth(),
+                        enabled = canAddMoreTags,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         trailingIcon = {
-                            if (state.tagInput.isNotBlank()) {
-                                IconButton(onClick = { screenModel.addTag(state.tagInput) }) {
+                            if (state.tagInput.isNotBlank() && canAddMoreTags) {
+                                IconButton(
+                                    onClick = { screenModel.addTag(state.tagInput) }
+                                ) {
                                     Icon(Icons.Default.Add, contentDescription = "Add")
                                 }
                             }

@@ -58,3 +58,12 @@ ORDER BY R.createdAt DESC;
 
 deleteReflection:
 DELETE FROM Reflection WHERE id = ?;
+
+deleteReflectionTags:
+DELETE FROM ReflectionTag WHERE reflectionId = ?;
+
+deleteOrphanTags:
+DELETE FROM Tag
+WHERE id NOT IN (
+    SELECT DISTINCT tagId FROM ReflectionTag
+);

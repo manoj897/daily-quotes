@@ -33,16 +33,7 @@ class ReflectionsScreenModel(
     fun loadReflections() {
         screenModelScope.launch {
             mutableState.update { it.copy(isLoading = true) }
-            val reflections = repository.getAllReflections()
-            val tags = repository.getAllTags()
-            mutableState.update { 
-                it.copy(
-                    reflections = reflections,
-                    filteredReflections = reflections,
-                    allTags = tags,
-                    isLoading = false
-                ) 
-            }
+            refreshFromRepository()
         }
     }
 
@@ -77,8 +68,8 @@ class ReflectionsScreenModel(
             idsToDelete.forEach { id ->
                 repository.deleteReflection(id)
             }
-            loadReflections()
-            mutableState.update { it.copy(selectedIds = emptySet()) }
+            refreshFromRepository()
+            mutableState.update { it.copy(selectedIds = emptySet(), isLoading = false) }
         }
     }
 
@@ -88,5 +79,26 @@ class ReflectionsScreenModel(
 
     fun shareReflection(shareText: String) {
         shareManager.shareText(shareText)
+    }
+
+    private fun refreshFromRepository() {
+        val reflections = repository.getAllReflections()
+        val tags = repository.getAllTags()
+        val selectedTag = state.value.selectedTag?.takeIf { tags.contains(it) }
+        val filteredReflections = if (selectedTag == null) {
+            reflections
+        } else {
+            reflections.filter { it.tags.contains(selectedTag) }
+        }
+
+        mutableState.update {
+            it.copy(
+                reflections = reflections,
+                filteredReflections = filteredReflections,
+                allTags = tags,
+                selectedTag = selectedTag,
+                isLoading = false
+            )
+        }
     }
 }

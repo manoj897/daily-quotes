@@ -37,6 +37,10 @@ class ReflectionRepository(db: DailyQuotesDb) {
     }
 
     fun deleteReflection(id: Long) {
-        queries.deleteReflection(id)
+        queries.transaction {
+            queries.deleteReflectionTags(id)
+            queries.deleteReflection(id)
+            queries.deleteOrphanTags()
+        }
     }
 }

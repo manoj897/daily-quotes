@@ -4,7 +4,7 @@
 Set up automated Android release pipeline for Daily Quotes app to deploy to Google Play Store using Fastlane (manual trigger, no CI/CD).
 
 ## Prerequisites Checklist
-- [ ] Google Play Developer Account ($25 one-time fee)
+- [x] Google Play Developer Account ($25 one-time fee)
 - [ ] Ruby 2.7+ installed (for Fastlane)
 - [ ] Android SDK installed
 
@@ -503,7 +503,7 @@ git status
 
 ### 6.1 Pre-Release Checklist
 
-- [ ] Google Play Developer account active
+- [x] Google Play Developer account active
 - [ ] Keystore created and backed up
 - [ ] `keystore.properties` created (not committed to git)
 - [ ] `play-store-credentials.json` downloaded (not committed to git)
@@ -511,6 +511,11 @@ git status
 - [ ] Store metadata filled in
 - [ ] Screenshots prepared
 - [ ] Privacy policy URL ready (create at https://privacypolicygenerator.info/)
+- [ ] Move any secrets out of GitHub and maintain them in a secure external location before release
+- [ ] Keep Fastlane setup inactive until release automation is intentionally enabled
+- [x] Add ZenQuotes API attribution wherever quote content is displayed, shared, or described in app/store copy as needed
+- [x] Clarify the main quote share flow so users understand "My Take" is optional and they can skip it before sharing
+- [ ] Fix the Reflect flow so its tag picker shows all tags available in the Reflections flow
 - [ ] App tested thoroughly on multiple devices
 - [ ] Version set to 1.0.0 / code 1
 

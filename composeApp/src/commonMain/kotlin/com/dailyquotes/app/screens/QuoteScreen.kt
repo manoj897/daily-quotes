@@ -7,7 +7,8 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,10 +29,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.ui.focus.onFocusChanged
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.dailyquotes.app.components.SourceShareToggle
+import com.dailyquotes.app.components.ZenQuotesAttribution
+import com.dailyquotes.app.components.appendZenQuotesSource
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,6 +139,12 @@ class QuoteScreen : Screen {
                                 modifier = Modifier.padding(top = 16.dp),
                                 color = MaterialTheme.colorScheme.secondary
                             )
+                            ZenQuotesAttribution(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 12.dp),
+                                horizontalArrangement = Arrangement.Center
+                            )
                             
                             Spacer(Modifier.height(48.dp))
 
@@ -184,6 +195,29 @@ class QuoteScreen : Screen {
                 contentColor = Color.White
             ) {
                 var userTake by remember { mutableStateOf("") }
+                var includeSourceInShare by remember { mutableStateOf(true) }
+                var isUserTakeHidden by remember { mutableStateOf(true) }
+                var isUserTakeFocused by remember { mutableStateOf(false) }
+                val hasUserTake = userTake.isNotBlank()
+                val isUserTakeActive = !isUserTakeHidden && (hasUserTake || isUserTakeFocused)
+                fun shareQuote() {
+                    val shareText = buildString {
+                        append("\"${quote.q}\"")
+                        append("\n— ${quote.a}")
+                        if (!isUserTakeHidden && hasUserTake) {
+                            append("\n\nMy Take\n$userTake")
+                        }
+                        if (includeSourceInShare) {
+                            appendZenQuotesSource()
+                        }
+                    }
+                    screenModel.shareQuote(shareText)
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        if (!sheetState.isVisible) {
+                            showShareSheet = false
+                        }
+                    }
+                }
 
                     Column(
                         modifier = Modifier
@@ -224,48 +258,90 @@ class QuoteScreen : Screen {
                         }
                     }
 
+                    SourceShareToggle(
+                        includeSourceInShare = includeSourceInShare,
+                        onIncludeSourceInShareChange = { includeSourceInShare = it },
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "My Take (optional)",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White
+                        )
+
+                        IconButton(
+                            onClick = {
+                                isUserTakeHidden = !isUserTakeHidden
+                                isUserTakeFocused = false
+                            }
+                        ) {
+                            Icon(
+                                if (isUserTakeHidden) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                contentDescription = if (isUserTakeHidden) "Include My Take in share" else "Exclude My Take from share",
+                                tint = if (isUserTakeHidden) Color.Gray else Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
                     Text(
-                        "My Take",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White,
+                        when {
+                            isUserTakeHidden -> "Excluded from share"
+                            isUserTakeActive -> "Included in share"
+                            else -> "Leave blank to share just the quote."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    OutlinedTextField(
-                        value = userTake,
-                        onValueChange = { userTake = it },
-                        placeholder = { Text("Add your thoughts...", color = Color.Gray) },
+                    if (!isUserTakeHidden) {
+                        OutlinedTextField(
+                            value = userTake,
+                            onValueChange = { newValue ->
+                                userTake = newValue
+                                if (newValue.isNotBlank()) {
+                                    isUserTakeHidden = false
+                                }
+                            },
+                            placeholder = { Text("Add your thoughts...", color = Color.Gray) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { focusState ->
+                                    isUserTakeFocused = focusState.isFocused
+                                },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color.White,
+                                unfocusedBorderColor = Color.Gray,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                cursorColor = Color.White
+                            ),
+                            minLines = 2
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = { shareQuote() },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.White,
-                            unfocusedBorderColor = Color.Gray,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            cursorColor = Color.White
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = Color.Black
                         ),
-                        minLines = 2,
-                        trailingIcon = {
-                            IconButton(onClick = {
-                                val shareText = buildString {
-                                    append("\"${quote.q}\"")
-                                    append("\n— ${quote.a}")
-                                    if (userTake.isNotBlank()) {
-                                        append("\n\nMy Take\n$userTake")
-                                    }
-                                }
-                                screenModel.shareQuote(shareText)
-                                scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                    if (!sheetState.isVisible) {
-                                        showShareSheet = false
-                                    }
-                                }
-                            }) {
-                                Icon(Icons.Default.Send, contentDescription = "Share now", tint = Color.White)
-                            }
-                        }
-                    )
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Text("Share Quote")
+                    }
                 }
             }
         }

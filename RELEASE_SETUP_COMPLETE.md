@@ -46,7 +46,7 @@ Your Daily Quotes app is now configured for Android release! Here's what's been 
 
 ## 📋 Next Steps
 
-### Step 1: Create Google Play Developer Account
+### Step 1: Create Google Play Developer Account - Done
 1. Go to https://play.google.com/console/signup
 2. Pay $25 one-time fee
 3. Wait for account verification (1-2 days)
@@ -82,13 +82,20 @@ adb shell screencap -p /sdcard/screenshot.png
 adb pull /sdcard/screenshot.png
 ```
 
-### Step 4: Privacy Policy
+### Step 4: Complete Pre-Release Product Fixes
+- [ ] Move any secrets out of GitHub and maintain them in a secure external location before release
+- [ ] Keep Fastlane setup inactive until release automation is intentionally enabled
+- [x] Add ZenQuotes API attribution wherever quote content is displayed, shared, or described in app/store copy as needed
+- [x] Clarify the main quote share flow so users understand "My Take" is optional and they can skip it before sharing
+- [ ] Fix the Reflect flow so its tag picker shows all tags available in the Reflections flow
+
+### Step 5: Privacy Policy
 Create a privacy policy (required by Google Play):
 - Use https://privacypolicygenerator.info/
 - Host it on a website (GitHub Pages, your website, etc.)
 - You'll add the URL in Play Console
 
-### Step 5: Complete Play Console Listing
+### Step 6: Complete Play Console Listing
 Fill out these required sections:
 - Store listing (auto-filled from Fastlane metadata)
 - App content (privacy policy, ads declaration, target audience)

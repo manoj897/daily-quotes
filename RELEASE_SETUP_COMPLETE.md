@@ -87,7 +87,7 @@ adb pull /sdcard/screenshot.png
 - [ ] Keep Fastlane setup inactive until release automation is intentionally enabled
 - [x] Add ZenQuotes API attribution wherever quote content is displayed, shared, or described in app/store copy as needed
 - [x] Clarify the main quote share flow so users understand "My Take" is optional and they can skip it before sharing
-- [ ] Fix the Reflect flow so its tag picker shows all tags available in the Reflections flow
+- [x] Fix the Reflect flow so its tag picker shows all tags available in the Reflections flow
 
 ### Step 5: Privacy Policy
 Create a privacy policy (required by Google Play):

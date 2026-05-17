@@ -48,7 +48,12 @@ JOIN ReflectionTag RT ON T.id = RT.tagId
 WHERE RT.reflectionId = ?;
 
 getAllTags:
-SELECT * FROM Tag;
+SELECT T.*
+FROM Tag T
+LEFT JOIN ReflectionTag RT ON T.id = RT.tagId
+LEFT JOIN Reflection R ON RT.reflectionId = R.id
+GROUP BY T.id
+ORDER BY COUNT(RT.reflectionId) DESC, MAX(R.createdAt) DESC, T.name COLLATE NOCASE ASC;
 
 getReflectionsByTag:
 SELECT R.* FROM Reflection R

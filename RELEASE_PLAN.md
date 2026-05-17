@@ -22,7 +22,7 @@ Set up automated Android release pipeline for Daily Quotes app to deploy to Goog
    - Default language: English
    - App/Game: Application
    - Free/Paid: Free
-5. Save the package name: `com.dailyquotes.app`
+5. Save the package name: `com.mkb.dailyquotes`
 
 ### 1.2 Create API Access Credentials
 **Action Items:**
@@ -220,7 +220,7 @@ VERSION_CODE=1
 ```kotlin
 android {
     defaultConfig {
-        applicationId = "com.dailyquotes.app"
+        applicationId = "com.mkb.dailyquotes"
         minSdk = 24
         targetSdk = 34
         compileSdk = 34
@@ -285,7 +285,7 @@ cd fastlane
 fastlane init
 
 # When prompted:
-# - Package Name: com.dailyquotes.app
+# - Package Name: com.mkb.dailyquotes
 # - Path to json secret file: ../play-store-credentials.json
 # - Download metadata: Yes (if you want)
 ```
@@ -390,7 +390,7 @@ end
 
 ```ruby
 json_key_file("play-store-credentials.json")
-package_name("com.dailyquotes.app")
+package_name("com.mkb.dailyquotes")
 ```
 
 ### 4.6 Store Metadata Setup
@@ -515,7 +515,7 @@ git status
 - [ ] Keep Fastlane setup inactive until release automation is intentionally enabled
 - [x] Add ZenQuotes API attribution wherever quote content is displayed, shared, or described in app/store copy as needed
 - [x] Clarify the main quote share flow so users understand "My Take" is optional and they can skip it before sharing
-- [ ] Fix the Reflect flow so its tag picker shows all tags available in the Reflections flow
+- [x] Fix the Reflect flow so its tag picker shows all tags available in the Reflections flow
 - [ ] App tested thoroughly on multiple devices
 - [ ] Version set to 1.0.0 / code 1
 

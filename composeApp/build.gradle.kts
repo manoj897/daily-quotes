@@ -76,7 +76,7 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.dailyquotes.app"
+        applicationId = "com.mkb.dailyquotes"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = project.property("VERSION_CODE").toString().toInt()

@@ -1,13 +1,10 @@
 package com.dailyquotes.shared
 
 import android.app.AlarmManager
-import android.app.NotificationChannel
-import android.app.NotificationManager as AndroidNotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import java.util.*
+import java.util.Calendar
 
 actual class NotificationManager(private val context: Context) {
 
@@ -33,21 +30,12 @@ actual class NotificationManager(private val context: Context) {
             }
         }
 
-        // Schedule the alarm - use exact if permitted, otherwise fall back to inexact
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && alarmManager.canScheduleExactAlarms()) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                pendingIntent
-            )
-        } else {
-            // Fallback to inexact alarm (may be delayed by a few minutes)
-            alarmManager.setAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                pendingIntent
-            )
-        }
+        // Inexact reminders avoid Play policy risk from exact alarm special access.
+        alarmManager.setAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            pendingIntent
+        )
 
         // Store the schedule time in SharedPreferences for boot receiver
         val prefs = context.getSharedPreferences("daily_quotes_prefs", Context.MODE_PRIVATE)

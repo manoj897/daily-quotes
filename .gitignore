@@ -30,3 +30,6 @@ fastlane/screenshots
 fastlane/test_output
 fastlane/.env
 /composeApp/src/androidMain/google-services (1).json
+
+# Firebase Hosting local deploy cache
+.firebase/

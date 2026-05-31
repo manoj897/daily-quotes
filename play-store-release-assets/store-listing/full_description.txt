@@ -1,14 +1,14 @@
-Daily Quotes helps you turn a daily quote into something personal: your own take, your own tags, and a reflection you can return to.
+Daily Quote Reflections helps you turn a daily quote into a personal prompt: read it, write your own take, tag it to your life, and return to it when you need perspective.
 
 Use it to:
 - Read a fresh daily quote
-- Write your take privately on your device
+- Add your personal take privately on your device
 - Tag reflections by themes, routines, moods, or parts of life
 - Revisit past reflections in a focused detail view
 - Set optional daily reminders
-- Share quotes with or without your own take
+- Share a quote with or without your own take
 
-Quotes are prompts. Your reflection is the point. Capture what a quote means to you, tag it to your world, and build a small library of thoughts that can inspire you later.
+A quote can start the thought, but your take makes it yours. Capture what a quote means to you, build a small library of reflections, and share your own words when they can inspire you or someone else.
 
 No account is required.
 

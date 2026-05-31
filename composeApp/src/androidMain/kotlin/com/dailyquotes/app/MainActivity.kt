@@ -8,7 +8,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import org.koin.android.ext.koin.androidContext
 
 class MainActivity : ComponentActivity() {
 
@@ -20,10 +19,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        initKoin {
-            androidContext(this@MainActivity)
-        }
 
         // Request notification permission on Android 13+
         requestNotificationPermission()

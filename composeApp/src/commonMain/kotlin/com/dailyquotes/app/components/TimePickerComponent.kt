@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -26,6 +27,10 @@ fun TimePickerComponent(
     minute: Int,
     onHourChange: (Int) -> Unit,
     onMinuteChange: (Int) -> Unit,
+    pickerWidth: Dp,
+    pickerHeight: Dp,
+    itemHeight: Dp,
+    columnGap: Dp,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -38,10 +43,13 @@ fun TimePickerComponent(
             value = hour,
             onValueChange = onHourChange,
             range = 0..23,
-            label = "Hour"
+            label = "Hour",
+            pickerWidth = pickerWidth,
+            pickerHeight = pickerHeight,
+            itemHeight = itemHeight
         )
 
-        Spacer(modifier = Modifier.width(32.dp))
+        Spacer(modifier = Modifier.width(columnGap))
 
         Text(
             text = ":",
@@ -50,14 +58,17 @@ fun TimePickerComponent(
             color = Color.White
         )
 
-        Spacer(modifier = Modifier.width(32.dp))
+        Spacer(modifier = Modifier.width(columnGap))
 
         // Minute picker (0-59)
         NumberPicker(
             value = minute,
             onValueChange = onMinuteChange,
             range = 0..59,
-            label = "Minute"
+            label = "Minute",
+            pickerWidth = pickerWidth,
+            pickerHeight = pickerHeight,
+            itemHeight = itemHeight
         )
     }
 }
@@ -68,6 +79,9 @@ private fun NumberPicker(
     onValueChange: (Int) -> Unit,
     range: IntRange,
     label: String,
+    pickerWidth: Dp,
+    pickerHeight: Dp,
+    itemHeight: Dp,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -86,9 +100,12 @@ private fun NumberPicker(
                 containerColor = Color(0xFF111111)
             ),
             shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.size(width = 80.dp, height = 180.dp)
+            modifier = Modifier
+                .width(pickerWidth)
+                .height(pickerHeight)
         ) {
             val listState = rememberLazyListState()
+            val verticalPadding = ((pickerHeight - itemHeight) / 2f).coerceAtLeast(0.dp)
 
             LaunchedEffect(value) {
                 // Scroll to selected value when it changes
@@ -101,7 +118,7 @@ private fun NumberPicker(
             LazyColumn(
                 state = listState,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                contentPadding = PaddingValues(vertical = 72.dp),
+                contentPadding = PaddingValues(vertical = verticalPadding),
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(range.count()) { index ->
@@ -111,7 +128,7 @@ private fun NumberPicker(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(36.dp)
+                            .height(itemHeight)
                             .clickable { onValueChange(itemValue) }
                             .background(
                                 if (isSelected) Color(0xFF222222)

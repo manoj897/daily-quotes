@@ -50,45 +50,66 @@ class SettingsScreen : Screen {
                 )
             }
         ) { padding ->
-            Box(
+            BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
+                    .navigationBarsPadding()
             ) {
+                val compactHeight = maxHeight < 620.dp
+                val outerPadding = if (compactHeight) 16.dp else 24.dp
+                val pickerHeight = (maxHeight * 0.28f).coerceIn(128.dp, 180.dp)
+                val pickerWidth = (maxWidth * 0.22f).coerceIn(72.dp, 88.dp)
+                val pickerItemHeight = (pickerHeight / 5f).coerceIn(28.dp, 38.dp)
+                val pickerGap = (maxWidth * 0.045f).coerceIn(16.dp, 32.dp)
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                        .padding(horizontal = 24.dp, vertical = outerPadding),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Section Title
-                    Text(
-                        text = "Daily Quote Notification",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(if (compactHeight) 8.dp else 12.dp)
+                        ) {
+                            // Section Title
+                            Text(
+                                text = "Daily Quote Notification",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
 
-                    Text(
-                        text = "Choose when you'd like to receive your daily quote notification.",
-                        fontSize = 14.sp,
-                        color = Color(0xFFBBBBBB)
-                    )
+                            Text(
+                                text = "Choose when you'd like to receive your daily quote notification.",
+                                fontSize = 14.sp,
+                                color = Color(0xFFBBBBBB)
+                            )
+                        }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        // Time Picker
+                        TimePickerComponent(
+                            hour = state.hour,
+                            minute = state.minute,
+                            onHourChange = { screenModel.updateHour(it) },
+                            onMinuteChange = { screenModel.updateMinute(it) },
+                            pickerWidth = pickerWidth,
+                            pickerHeight = pickerHeight,
+                            itemHeight = pickerItemHeight,
+                            columnGap = pickerGap,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
 
-                    // Time Picker
-                    TimePickerComponent(
-                        hour = state.hour,
-                        minute = state.minute,
-                        onHourChange = { screenModel.updateHour(it) },
-                        onMinuteChange = { screenModel.updateMinute(it) }
-                    )
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    // Save Button
+                    // Save Reminder Button
                     Button(
                         onClick = { screenModel.saveSettings() },
                         enabled = !state.isSaving,
@@ -98,7 +119,7 @@ class SettingsScreen : Screen {
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp)
+                            .heightIn(min = 56.dp)
                     ) {
                         if (state.isSaving) {
                             CircularProgressIndicator(
@@ -107,7 +128,7 @@ class SettingsScreen : Screen {
                             )
                         } else {
                             Text(
-                                text = "Save",
+                                text = "Save Reminder",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -122,7 +143,7 @@ class SettingsScreen : Screen {
                     exit = fadeOut(),
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .padding(bottom = 32.dp)
+                        .padding(bottom = outerPadding + 72.dp)
                 ) {
                     Card(
                         colors = CardDefaults.cardColors(

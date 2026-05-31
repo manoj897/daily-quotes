@@ -30,68 +30,86 @@ class OnboardingScreen : Screen {
         val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
 
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
-                .padding(24.dp),
-            contentAlignment = Alignment.Center
+                .statusBarsPadding()
+                .navigationBarsPadding()
         ) {
+            val compactHeight = maxHeight < 700.dp
+            val outerPadding = if (compactHeight) 16.dp else 24.dp
+            val pickerHeight = (maxHeight * 0.22f).coerceIn(128.dp, 180.dp)
+            val pickerWidth = (maxWidth * 0.22f).coerceIn(72.dp, 88.dp)
+            val pickerItemHeight = (pickerHeight / 5f).coerceIn(28.dp, 38.dp)
+            val pickerGap = (maxWidth * 0.045f).coerceIn(16.dp, 32.dp)
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(32.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp, vertical = outerPadding)
             ) {
-                // App Title
-                Text(
-                    text = "Daily Quotes",
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    // App Title
+                    Text(
+                        text = "Daily Quotes",
+                        fontSize = if (compactHeight) 30.sp else 36.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center
+                    )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(if (compactHeight) 8.dp else 12.dp)
+                    ) {
+                        // Informational Text
+                        Text(
+                            text = "Choose when you'd like to receive your daily quote.",
+                            fontSize = if (compactHeight) 16.sp else 18.sp,
+                            color = Color(0xFFBBBBBB),
+                            textAlign = TextAlign.Center,
+                            lineHeight = if (compactHeight) 22.sp else 26.sp
+                        )
 
-                // Informational Text
-                Text(
-                    text = "Choose when you'd like to receive your daily quote.",
-                    fontSize = 18.sp,
-                    color = Color(0xFFBBBBBB),
-                    textAlign = TextAlign.Center,
-                    lineHeight = 26.sp
-                )
+                        Text(
+                            text = "If not set, quotes will be delivered at 9 AM every day.",
+                            fontSize = 14.sp,
+                            color = Color(0xFF888888),
+                            textAlign = TextAlign.Center,
+                            lineHeight = 20.sp
+                        )
+                    }
 
-                Text(
-                    text = "If not set, quotes will be delivered at 9 AM every day.",
-                    fontSize = 14.sp,
-                    color = Color(0xFF888888),
-                    textAlign = TextAlign.Center,
-                    lineHeight = 20.sp
-                )
+                    // Time Picker
+                    TimePickerComponent(
+                        hour = state.selectedHour,
+                        minute = state.selectedMinute,
+                        onHourChange = { screenModel.updateHour(it) },
+                        onMinuteChange = { screenModel.updateMinute(it) },
+                        pickerWidth = pickerWidth,
+                        pickerHeight = pickerHeight,
+                        itemHeight = pickerItemHeight,
+                        columnGap = pickerGap,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        text = "You can change this later in settings.",
+                        fontSize = 12.sp,
+                        color = Color(0xFF888888),
+                        textAlign = TextAlign.Center
+                    )
+                }
 
-                // Time Picker
-                TimePickerComponent(
-                    hour = state.selectedHour,
-                    minute = state.selectedMinute,
-                    onHourChange = { screenModel.updateHour(it) },
-                    onMinuteChange = { screenModel.updateMinute(it) }
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = "You can change this later in settings.",
-                    fontSize = 12.sp,
-                    color = Color(0xFF888888),
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Get Started Button
+                // Save Reminder Button
                 Button(
                     onClick = {
                         screenModel.completeOnboarding {
@@ -106,7 +124,7 @@ class OnboardingScreen : Screen {
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .heightIn(min = 56.dp)
                 ) {
                     if (state.isCompleting) {
                         CircularProgressIndicator(
@@ -115,7 +133,7 @@ class OnboardingScreen : Screen {
                         )
                     } else {
                         Text(
-                            text = "Get Started",
+                            text = "Save Reminder",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )

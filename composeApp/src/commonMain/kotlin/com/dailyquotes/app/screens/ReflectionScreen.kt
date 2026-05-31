@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -29,6 +31,7 @@ import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.dailyquotes.shared.Quote
+import kotlinx.coroutines.delay
 
 class ReflectionScreen(private val quote: Quote) : Screen {
     @OptIn(ExperimentalLayoutApi::class)
@@ -37,6 +40,11 @@ class ReflectionScreen(private val quote: Quote) : Screen {
         val screenModel = getScreenModel<ReflectionScreenModel>()
         val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
+        val tagScrollState = rememberScrollState()
+        var isTagInputFocused by remember { mutableStateOf(false) }
+        val density = LocalDensity.current
+        val isImeVisible = WindowInsets.ime.getBottom(density) > 0
+        val keyboardTopGuard = if (isImeVisible) 48.dp else 0.dp
         val selectedTagLimitText = when {
             state.tags.size >= ReflectionScreenModel.MAX_TAGS_PER_REFLECTION -> "${ReflectionScreenModel.MAX_TAGS_PER_REFLECTION} tag limit reached"
             state.tags.size >= ReflectionScreenModel.TAG_WARNING_THRESHOLD -> "${state.tags.size} of ${ReflectionScreenModel.MAX_TAGS_PER_REFLECTION} tags used"
@@ -68,183 +76,225 @@ class ReflectionScreen(private val quote: Quote) : Screen {
             }
         }
 
+        LaunchedEffect(isTagInputFocused, state.tags.size, tagScrollState.maxValue) {
+            if (isTagInputFocused) {
+                delay(100)
+                tagScrollState.animateScrollTo(tagScrollState.maxValue)
+            }
+        }
+
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = Color.Black
         ) {
-            Column(
+            BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp)
-                    .verticalScroll(rememberScrollState())
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
                     .imePadding()
+                    .padding(top = keyboardTopGuard)
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
             ) {
-                // Header with Close
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { navigator.pop() }) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
-                    }
-                    TextButton(
-                        onClick = { screenModel.saveReflection(quote) },
-                        enabled = !state.isSaving && state.note.isNotBlank()
-                    ) {
-                        Text("SAVE", color = if (state.note.isNotBlank()) Color.White else Color.Gray)
-                    }
+                val sectionGap = (maxHeight * 0.018f).coerceIn(12.dp, 20.dp)
+                val tagSectionMaxHeight = if (isImeVisible) {
+                    (maxHeight * 0.42f).coerceIn(220.dp, 320.dp)
+                } else {
+                    (maxHeight * 0.34f).coerceIn(220.dp, 360.dp)
                 }
+                val noteMinHeight = if (isImeVisible) 96.dp else 140.dp
 
-                // Quote Preview (Abridged)
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF111111)),
-                    modifier = Modifier.padding(vertical = 16.dp)
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = quote.q,
-                            color = Color(0xFFBBBBBB),
-                            fontSize = 14.sp,
-                            lineHeight = 20.sp
-                        )
-                        Text(
-                            text = "- ${quote.a}",
-                            color = Color(0xFF888888),
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                    }
-                }
-
-                // Note Field (outlined for visual emphasis)
-                OutlinedTextField(
-                    value = state.note,
-                    onValueChange = { screenModel.onNoteChange(it) },
-                    placeholder = {
-                        Text(
-                            "How does this apply to your life today?",
-                            color = Color.DarkGray,
-                            fontSize = 18.sp
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    textStyle = LocalTextStyle.current.copy(fontSize = 18.sp, lineHeight = 28.sp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.DarkGray,
-                        cursorColor = Color.White
-                    ),
-                    singleLine = false
-                )
-
-                // Tags Section
-                Column(modifier = Modifier.padding(vertical = 16.dp)) {
-                    // Suggestions stay visible above the input
-                    if (state.suggestedTags.isNotEmpty()) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = tagSuggestionTitle,
-                                color = Color.Gray,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                            tagSuggestionMeta?.let {
-                                Text(
-                                    text = it,
-                                    color = Color.Gray,
-                                    fontSize = 12.sp
-                                )
-                            }
-                        }
-                        FlowRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            state.suggestedTags.forEach { tag ->
-                                SuggestionChip(tag = tag, onClick = { screenModel.addTag(tag) })
-                            }
-                        }
-                    }
-
-                    // Selected Tags
-                    if (state.tags.isNotEmpty()) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 8.dp)
-                        ) {
-                            state.tags.forEach { tag ->
-                                TagChip(tag = tag, onRemove = { screenModel.removeTag(tag) })
-                            }
-                        }
-                    }
-
-                    if (selectedTagLimitText != null || globalTagLimitText != null) {
+                    if (!isImeVisible) {
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 8.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            selectedTagLimitText?.let {
-                                Text(
-                                    text = it,
-                                    color = Color.Gray,
-                                    fontSize = 12.sp
-                                )
-                            }
-                            globalTagLimitText?.let {
-                                Text(
-                                    text = it,
-                                    color = Color.Gray,
-                                    fontSize = 12.sp
-                                )
-                            }
-                        }
-                    }
-
-                    // Tag Input (kept in view when keyboard opens)
-                    OutlinedTextField(
-                        value = state.tagInput,
-                        onValueChange = { screenModel.onTagInputChange(it) },
-                        placeholder = { Text(if (canAddMoreTags) "Search / Add a tag" else "Tag limit reached") },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = canAddMoreTags,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        trailingIcon = {
-                            if (state.tagInput.isNotBlank() && canAddMoreTags) {
-                                IconButton(
-                                    onClick = { screenModel.addTag(state.tagInput) }
+                            // Header with Close
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                IconButton(onClick = { navigator.pop() }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+                                }
+                                TextButton(
+                                    onClick = { screenModel.saveReflection(quote) },
+                                    enabled = !state.isSaving && state.note.isNotBlank()
                                 ) {
-                                    Icon(Icons.Default.Add, contentDescription = "Add")
+                                    Text("SAVE", color = if (state.note.isNotBlank()) Color.White else Color.Gray)
                                 }
                             }
+
+                            // Quote Preview (Abridged)
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFF111111))
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        text = quote.q,
+                                        color = Color(0xFFBBBBBB),
+                                        fontSize = 14.sp,
+                                        lineHeight = 20.sp
+                                    )
+                                    Text(
+                                        text = "- ${quote.a}",
+                                        color = Color(0xFF888888),
+                                        fontSize = 12.sp,
+                                        modifier = Modifier.padding(top = 8.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(sectionGap))
+                    }
+
+                    // Note Field (outlined for visual emphasis)
+                    OutlinedTextField(
+                        value = state.note,
+                        onValueChange = { screenModel.onNoteChange(it) },
+                        placeholder = {
+                            Text(
+                                "How does this apply to your life today?",
+                                color = Color.DarkGray,
+                                fontSize = 18.sp
+                            )
                         },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .heightIn(min = noteMinHeight),
+                        textStyle = LocalTextStyle.current.copy(fontSize = 18.sp, lineHeight = 28.sp),
+                        shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
                             focusedBorderColor = Color.White,
-                            unfocusedBorderColor = Color.DarkGray
+                            unfocusedBorderColor = Color.DarkGray,
+                            cursorColor = Color.White
                         ),
-                        shape = RoundedCornerShape(12.dp),
                         singleLine = false
                     )
+
+                    Spacer(modifier = Modifier.height(sectionGap))
+
+                    // Tags Section
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = tagSectionMaxHeight)
+                            .verticalScroll(tagScrollState)
+                            .padding(bottom = 4.dp)
+                    ) {
+                        // Suggestions stay visible above the input
+                        if (state.suggestedTags.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = tagSuggestionTitle,
+                                    color = Color.Gray,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                tagSuggestionMeta?.let {
+                                    Text(
+                                        text = it,
+                                        color = Color.Gray,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                            FlowRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                state.suggestedTags.forEach { tag ->
+                                    SuggestionChip(tag = tag, onClick = { screenModel.addTag(tag) })
+                                }
+                            }
+                        }
+
+                        // Selected Tags
+                        if (state.tags.isNotEmpty()) {
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp)
+                            ) {
+                                state.tags.forEach { tag ->
+                                    TagChip(tag = tag, onRemove = { screenModel.removeTag(tag) })
+                                }
+                            }
+                        }
+
+                        if (selectedTagLimitText != null || globalTagLimitText != null) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                selectedTagLimitText?.let {
+                                    Text(
+                                        text = it,
+                                        color = Color.Gray,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                                globalTagLimitText?.let {
+                                    Text(
+                                        text = it,
+                                        color = Color.Gray,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                        }
+
+                        // Tag Input (kept in view when keyboard opens)
+                        OutlinedTextField(
+                            value = state.tagInput,
+                            onValueChange = { screenModel.onTagInputChange(it) },
+                            placeholder = { Text(if (canAddMoreTags) "Search / Add a tag" else "Tag limit reached") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 56.dp)
+                            .onFocusChanged { isTagInputFocused = it.isFocused },
+                            enabled = canAddMoreTags,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            trailingIcon = {
+                                if (state.tagInput.isNotBlank() && canAddMoreTags) {
+                                    IconButton(
+                                        onClick = { screenModel.addTag(state.tagInput) }
+                                    ) {
+                                        Icon(Icons.Default.Add, contentDescription = "Add")
+                                    }
+                                }
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                focusedBorderColor = Color.White,
+                                unfocusedBorderColor = Color.DarkGray
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true
+                        )
+                    }
                 }
             }
         }
